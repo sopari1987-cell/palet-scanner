@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pemindai Palet QR</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #reader { width: 100%; max-width: 500px; margin: auto; }
+        #scanned-list { margin-top: 20px; border: 1px solid #ccc; padding: 10px; min-height: 50px; }
+        #count { font-weight: bold; margin-top: 10px; }
+    </style>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body>
+
+    <h1>Pemindai Palet QR</h1>
+
+    <div id="reader"></div>
+
+    <div id="scanned-list">
+        <h2>ID Palet yang Terpindai:</h2>
+        <ul id="qr-list"></ul>
+    </div>
+
+    <p id="count">Jumlah ID yang terpindai: 0</p>
+
+    <button id="save-button" onclick="saveData()">Simpan Data</button>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwSXZblhPTmOvIkQGsRf0Z-ycyd6zuvq4lnmOLGTgZE0D_vpStWNFA45MfFrl-pWC1TWQ/exec'; // GANTI DENGAN URL APPS SCRIPT ANDA
+        let scannedIDs = new Set();
+        const qrListElement = document.getElementById('qr-list');
+        const countElement = document.getElementById('count');
+
+        // Fungsi untuk menangani hasil pemindaian
+        function onScanSuccess(decodedText, decodedResult) {
+            if (!scannedIDs.has(decodedText)) {
+                scannedIDs.add(decodedText);
+                const li = document.createElement('li');
+                li.textContent = decodedText;
+                qrListElement.appendChild(li);
+                countElement.textContent = `Jumlah ID yang terpindai: ${scannedIDs.size}`;
+            }
+        }
+
+        // Fungsi untuk menangani error
+        function onScanFailure(error) {
+            // console.warn(`Code scan error = ${error}`);
+        }
+
+        // Inisialisasi pemindai QR
+        const html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+        // Fungsi untuk mengirim data ke Google Sheets
+        async function saveData() {
+            if (scannedIDs.size === 0) {
+                alert("Tidak ada data untuk disimpan.");
+                return;
+            }
+
+            const dataToSave = {
+                idPalets: Array.from(scannedIDs)
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(dataToSave),
+                    headers: { 'Content-Type': 'text/plain' } // Penting untuk Apps Script
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    alert('Data berhasil disimpan!');
+                    // Reset daftar setelah berhasil disimpan
+                    scannedIDs.clear();
+                    qrListElement.innerHTML = '';
+                    countElement.textContent = 'Jumlah ID yang terpindai: 0';
+                } else {
+                    alert('Gagal menyimpan data.');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menyimpan data.');
+            }
+        }
+    </script>
+
+</body>
+</html>
