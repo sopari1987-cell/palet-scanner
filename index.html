@@ -3,32 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pemindai Palet QR</title>
+    <title>Return Pallet to HANWA</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        #reader { width: 100%; max-width: 500px; margin: auto; }
-        #scanned-list { margin-top: 20px; border: 1px solid #ccc; padding: 10px; min-height: 50px; }
-        #count { font-weight: bold; margin-top: 10px; }
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #000;
+            margin-top: 30px;
+            margin-bottom: 5px;
+            font-size: 2.5em; /* Ukuran font lebih besar */
+        }
+        .subtitle {
+            color: #4CAF50; /* Warna hijau seperti contoh */
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        .container {
+            width: 90%;
+            max-width: 500px;
+            background-color: #E8F5E9; /* Warna hijau muda */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-sizing: border-box; /* Pastikan padding dihitung dalam lebar */
+        }
+        #reader {
+            width: 100%;
+            margin: auto;
+            border: 1px solid #ccc; /* Border untuk area scanner */
+            padding: 10px; /* Padding di dalam area scanner */
+            background-color: #fff; /* Background putih untuk area kamera */
+            border-radius: 4px;
+        }
+        /* Style untuk tombol-tombol di dalam #reader jika ada */
+        #reader button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            background-color: #007bff; /* Contoh warna biru untuk tombol Request Camera */
+            color: white;
+        }
+        #reader button:hover {
+            opacity: 0.9;
+        }
+        #reader div[data-action="scan-image-file"] button {
+            background-color: #6c757d; /* Contoh warna abu-abu untuk tombol Scan Image */
+        }
+
+        .summary-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #E8F5E9; /* Warna hijau muda */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-sizing: border-box;
+            border: 1px solid #ccc; /* Border seperti contoh */
+        }
+        .summary-box span {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        #count {
+            font-size: 1.8em; /* Ukuran font lebih besar untuk angka */
+            color: #000;
+        }
+
+        .list-box {
+            background-color: #E8F5E9; /* Warna hijau muda */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-sizing: border-box;
+            border: 1px solid #ccc; /* Border seperti contoh */
+        }
+        .list-box h2 {
+            margin-top: 0;
+            font-size: 1.2em;
+            color: #333;
+        }
+        #qr-list {
+            list-style: none; /* Hapus bullet point */
+            padding: 0;
+            max-height: 150px; /* Batasi tinggi daftar agar tidak terlalu panjang */
+            overflow-y: auto; /* Tambahkan scroll jika item terlalu banyak */
+            border: 1px solid #eee; /* Border tipis untuk area list */
+            padding: 5px;
+            background-color: #fff;
+            border-radius: 4px;
+        }
+        #qr-list li {
+            padding: 5px 0;
+            border-bottom: 1px dashed #eee;
+            color: #555;
+            font-size: 0.95em;
+        }
+        #qr-list li:last-child {
+            border-bottom: none;
+        }
+
+        #save-button {
+            background-color: #4CAF50; /* Warna hijau untuk tombol simpan */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 30px;
+            transition: background-color 0.3s ease;
+        }
+        #save-button:hover {
+            background-color: #45a049;
+        }
     </style>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
 
-    <h1>SCAN QR Palet SHARP</h1>
+    <h1>Return Pallet to HANWA</h1>
+    <p class="subtitle">-SCAN QR Pallet SHARP-</p>
 
-    <div id="reader"></div>
-
-    <div id="scanned-list">
-        <h2>ID Palet yang Terpindai:</h2>
-        <ul id="qr-list"></ul>
+    <div class="container">
+        <div id="reader"></div>
     </div>
 
-    <p id="count">Jumlah ID yang terpindai: 0</p>
+    <div class="summary-box">
+        <span>Jumlah ID ter-scan</span>
+        <span id="count">0</span>
+    </div>
+
+    <div class="list-box">
+        <h2>ID Pallet yang terpindai :</h2>
+        <ul id="qr-list"></ul>
+    </div>
 
     <button id="save-button" onclick="saveData()">Simpan Data</button>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwSXZblhPTmOvIkQGsRf0Z-ycyd6zuvq4lnmOLGTgZE0D_vpStWNFA45MfFrl-pWC1TWQ/exec'; // GANTI DENGAN URL APPS SCRIPT ANDA
+        const API_URL = 'GANTI_DENGAN_URL_WEB_APP_ANDA'; // GANTI DENGAN URL APPS SCRIPT ANDA
         let scannedIDs = new Set();
         const qrListElement = document.getElementById('qr-list');
         const countElement = document.getElementById('count');
@@ -39,19 +174,19 @@
                 scannedIDs.add(decodedText);
                 const li = document.createElement('li');
                 li.textContent = decodedText;
-                qrListElement.appendChild(li);
-                countElement.textContent = `Jumlah ID yang terpindai: ${scannedIDs.size}`;
+                qrListElement.prepend(li); // Tampilkan yang terbaru di atas
+                countElement.textContent = scannedIDs.size; // Hanya angka
             }
         }
 
         // Fungsi untuk menangani error
         function onScanFailure(error) {
-            // console.warn(`Code scan error = ${error}`);
+            // console.warn(`Code scan error = ${error}`); // Bisa diaktifkan untuk debugging
         }
 
         // Inisialisasi pemindai QR
         const html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+            "reader", { fps: 10, qrbox: { width: 250, height: 250 }, rememberLastUsedCamera: true }, false);
         html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 
         // Fungsi untuk mengirim data ke Google Sheets
@@ -78,7 +213,7 @@
                     // Reset daftar setelah berhasil disimpan
                     scannedIDs.clear();
                     qrListElement.innerHTML = '';
-                    countElement.textContent = 'Jumlah ID yang terpindai: 0';
+                    countElement.textContent = '0';
                 } else {
                     alert('Gagal menyimpan data.');
                 }
@@ -91,5 +226,4 @@
     </script>
 
 </body>
-
 </html>
